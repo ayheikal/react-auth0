@@ -1,4 +1,4 @@
-import {Route} from 'react-router-dom';
+import {Redirect, Route} from 'react-router-dom';
 import Profile from "./Profile";
 import Home from "./Home";
 import Navbar from "./Navbar";
@@ -16,11 +16,14 @@ class App extends Component {
         return (
             <>
 
-                    <Navbar></Navbar>
+                    <Navbar auth={this.auth}></Navbar>
                   <div className={'body'} style={{padding:'20px',textAlign:'center'}}>
                     <Route  path={'/'} exact  render={props => <Home auth={this.auth} {...props}/>}/>
                     <Route path={'/callback'} render={props => <Callback auth={this.auth} {...props}/>}/>
-                    <Route component={Profile} path={'/profile'}></Route>
+                    <Route  path={'/profile'}
+                        render={props => this.auth.isAuthenticated()?(< Profile auth={this.auth} {...props}/>)
+                        :(<Redirect to={"/"}/>)
+                        }/>
                 </div>
             </>
         );

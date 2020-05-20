@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Link,NavLink} from 'react-router-dom'
 class Navbar extends Component {
     render() {
+        const {login,logout,isAuthenticated}=this.props.auth;
         return (
             <nav className="navbar navbar-expand-lg navbar-light bg-light">
                 <Link className="navbar-brand" to={'/'}>react-auth0</Link>
@@ -14,6 +15,11 @@ class Navbar extends Component {
                         </li>
                         <li className="nav-item">
                             <NavLink className="nav-link"  to={'/profile'}>Profile</NavLink>
+                        </li>
+                        <li className="nav-item">
+                            <button className="nav-link btn"  onClick={isAuthenticated()?logout:login}>
+                                {isAuthenticated()?"logout":"login"}
+                            </button>
                         </li>
 
                     </ul>

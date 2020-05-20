@@ -4,6 +4,7 @@ import auth0 from 'auth0-js'
 export default class Auth {
     constructor(history) {
         this.history=history;
+        this.userProfile=null;
         this.auth0=new auth0.WebAuth({
             domain:process.env.REACT_APP_AUTH0_DOMAIN,
             clientID:process.env.REACT_APP_AUTH0_CLIENT_ID,
@@ -19,9 +20,9 @@ export default class Auth {
     }
 
     handleAuthentication=()=>{
-      this.auth0.browserHistory((err, authResult)=>{
+      this.auth0.parseHash((err, authResult)=>{
         console.log('authResult',authResult)
-        if(authResult && authResult.access_token && authResult.id_token){
+        if(authResult && authResult.accessToken && authResult.idToken){
           this.setSession(authResult);
           this.history.push('/');
         }
@@ -37,13 +38,42 @@ export default class Auth {
       console.log(authResult);
       //set the time that the access_token will take to expire
       const expireAt=JSON.stringify(authResult.expiresIn*1000+new Date().getTime());
-      localStorage.setItem('access_token',authResult.access_token)
-      localStorage.setItem('id_token',authResult.id_token)
+      localStorage.setItem('access_token',authResult.accessToken)
+      localStorage.setItem('id_token',authResult.idToken)
       localStorage.setItem('expires_at',expireAt)
     }
+
+
     isAuthenticated(){
       const expiresAt=JSON.parse(localStorage.getItem("expires_at"));
       return new Date().getTime()<expiresAt;
     }
+
+    logout=()=>{
+
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('id_token')
+        localStorage.removeItem('expires_at')
+        this.userProfile=null;
+        this.history.push("/");
+    }
+
+    getAccessToken=()=>{
+        const accessToken=localStorage.getItem("access_token");
+        if(!accessToken){
+            throw new Error("no access token found")
+        }
+        return accessToken;
+    }
+
+    getProfile=(cb)=>{
+        if(this.userProfile) return cb(this.userProfile);
+        this.auth0.client.userInfo(this.getAccessToken(),(err, profile)=>{
+            if(profile) this.userProfile=profile;
+            cb(err,profile);
+        })
+    }
+
+
 
 }
